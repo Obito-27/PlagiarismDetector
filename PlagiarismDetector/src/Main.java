@@ -17,12 +17,15 @@ public class Main {
     public static void main(String[] args) {
         // Parse flags and arguments
         boolean webMode = false;
+        boolean serverMode = false;
         String doc1Path = null;
         String doc2Path = null;
 
         for (int i = 0; i < args.length; i++) {
             String arg = args[i].trim();
-            if ("--web".equalsIgnoreCase(arg) || "-w".equalsIgnoreCase(arg)) {
+            if ("--server".equalsIgnoreCase(arg) || "-s".equalsIgnoreCase(arg)) {
+                serverMode = true;
+            } else if ("--web".equalsIgnoreCase(arg) || "-w".equalsIgnoreCase(arg)) {
                 webMode = true;
             } else if ("--help".equalsIgnoreCase(arg) || "-h".equalsIgnoreCase(arg)) {
                 printHelp();
@@ -36,11 +39,26 @@ public class Main {
             }
         }
 
+        if (serverMode) {
+            web.WebServer.startServer(8080);
+            return;
+        }
+
         // Interactive prompt if arguments are missing
         if (doc1Path == null) {
             Scanner scanner = new Scanner(System.in);
             printBanner();
-            System.out.println("No document arguments supplied. Entering interactive mode.\n");
+            System.out.println("No document arguments supplied.\n");
+            System.out.println("Select Mode:");
+            System.out.println("  [1] Launch Localhost Web UI Server (http://localhost:8080)");
+            System.out.println("  [2] Run Console Document Comparison");
+            System.out.print("Choice (default: 1): ");
+            String modeChoice = scanner.nextLine().trim();
+
+            if (modeChoice.isEmpty() || "1".equals(modeChoice)) {
+                web.WebServer.startServer(8080);
+                return;
+            }
 
             System.out.print("Enter path to Document 1 (Query Document): ");
             doc1Path = scanner.nextLine().trim();
@@ -109,10 +127,12 @@ public class Main {
     private static void printHelp() {
         printBanner();
         System.out.println("USAGE:");
+        System.out.println("  java -cp \"bin;lib/*\" Main --server");
         System.out.println("  java -cp \"bin;lib/*\" Main <doc1> <doc2> [options]");
         System.out.println("  java -cp \"bin;lib/*\" Main <doc1> --web");
         System.out.println("  java -cp \"bin;lib/*\" Main (launches interactive prompt)\n");
         System.out.println("OPTIONS:");
+        System.out.println("  --server, -s    Launch localhost web dashboard server (http://localhost:8080)");
         System.out.println("  --web, -w       Enable optional web-check mode (queries web search engine)");
         System.out.println("  --no-color      Disable ANSI color codes in console output");
         System.out.println("  --help, -h      Display this help menu\n");
